@@ -173,10 +173,29 @@ let ei :: Ll Int
     ei = Cons 3 (Cons 3 Empty)
 :}
 
-let fd = Cons 3 Empty
+
+:{
+let mapL _ Empty = Empty
+    mapL f (Cons x xs) = Cons (f x) (mapL f xs)
+:}
+
+mapL (+1) fd
+
+
+let fd = Cons 4 (Cons 3 Empty)
+
+fd
+
+let sd = Cons fd Empty
+
+:t fd
+:t sd
 
 let ke = Cons 3 fd
 
+
+cantor2 0
+cantor2 3
 
 :{
 let cdr :: Ll a -> Ll a
@@ -198,6 +217,72 @@ data Tree a = Leaf a | Branch (Tree a) (Tree a) deriving (Show)
 -- have a data point at the node as well
 
 data RTree a = Leaf a | Branch a (RTree a) (RTree a) deriving (Show)
+
+:{
+let leftT :: RTree a -> RTree a
+    leftT (Branch _ t1 t2) = t1
+:}
+
+
+:{
+let rightT :: RTree a -> RTree a
+    rightT (Branch _ t1 t2) = t2
+:}
+
+:{
+let car :: Ll a -> a
+    car (Cons x _) = x
+:}
+
+
+:{
+let a :: RTree Int
+    a = Branch 3 (Branch 4 (Leaf 5) (Leaf 6)) (Branch 6 (Branch 7 (Leaf 32) (Leaf 3)) (Branch 89 (Leaf 32) (Leaf 3)))
+:}
+
+a
+
+let b = Branch 3 a a
+
+let c = Branch 4 b b
+
+c
+
+let d = Branch 1 (Branch (Leaf 2) (Leaf 3)) (Branch 4 (Leaf 34) (Leaf 5))
+
+let d = Branch 1 (Leaf 3) (Leaf 4)
+
+let e = Branch 1 d d
+
+e
+
+let f = Branch 3 (Leaf 3) e
+
+
+-- shouldn't work because, we can't likewise test "isTree"
+:{
+let isLeaf :: RTree Int -> Bool
+    isLeaf t
+      t == Leaf a = True
+      otherwise = False
+:}
+
+
+
+
+
+f
+
+b
+
+leftT a
+
+leftT $ leftT $ leftT a
+
+head []
+
+rightT a
+
 
 
 {-# LANGUAGE DeriveFunctor #-}

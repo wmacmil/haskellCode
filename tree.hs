@@ -108,8 +108,7 @@ mapConsList [(3,2)] [[(3,1)],[(4,4)]]
 
 pathsFromN 1 g
 
-let g = Graph [1,2,3,4] [(1,2),(1,3),(2,3),(2,4),(3,4)]
-
+let g = Graph [1,2,3,4,5] [(1,2),(1,3),(2,3),(2,4),(2,5),(3,4),(4,1),(4,5)]
 let e = edges g
 
 e
@@ -156,7 +155,45 @@ let aaa = zipWith mapConsList (pathsFromNe 1 e) (mapPaths (mapSnd $ pathsFromNe 
 
 :t aaa
 
-mapPaths [2,3] e
+e
+
+-- all definitions are referenced below
+
+:{
+let aaa edg n = zipWith mapConsList pf mp
+      where mp = mapPaths ms edg
+            ms = mapSnd $ pf
+            pf = pathsFromNe n edg
+:}
+
+aaa e 5
+
+-- it clearly doesn't work if there isn't a second order term, e.g. (1,5).  So it is a much more rigid, linear algebra like structure (e.g. all the lists must have two elements), they can't have 1
+
+let g = Graph [1,2,3,4,5] [(1,2),(1,3),(1,4),(2,3),(2,4),(3,4),(4,1),(1,5),(5,2)]
+let e = edges g
+
+mapPaths [1,2] e
+
+let mapSnd e = map snd e
+let mapPaths ns e = map (\x -> pathsFromNe x e) ns
+let pathsFromNe n edges = fn n $ edges
+:{
+let fn n [] = []
+    fn n (x:xs)
+      | n == fst x = x : fn n xs
+      | otherwise = fn n xs
+:}
+
+-- just testing the order of where expressions
+:{
+let gjk b = 3*x + y
+      where x = y + 2
+            y = z * 3
+            z = b
+:}
+gjk 3
+
 
 mapPaths e nodes1
 

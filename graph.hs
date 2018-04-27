@@ -1,83 +1,265 @@
+I'm trying to define fmap over a Tree type from hammar's answer in https://stackoverflow.com/questions/7624774/haskell-map-for-trees
+
+His definition derives functor, which uses a pragma, which I'm only vaguely familiar with.  His definition is
+
+    {-# LANGUAGE DeriveFunctor #-}
+    data Tree a = Leaf a | Node (Tree a) (Tree a)
+        deriving (Functor, Show)
+
+I can't get the pragma and definition to work in GHCI.  Below are my three mistaken attempts, and I would appreciate any feedback!
+
+First attempt:
+
+    Prelude> {-# LANGUAGE DeriveFunctor #-}
+    Prelude> data Tree a = Leaf a | Node (Tree a) (Tree a)
+    Prelude>     deriving (Functor, Show)
+    <interactive>:30:5: parse error on input ‘deriving’
+
+Second try:
+
+    Prelude> {-# LANGUAGE DeriveFunctor #-}
+    Prelude> data Tree a = Leaf a | Node (Tree a) (Tree a) deriving (Functor, Show)
+    <interactive>:32:57:
+        Can't make a derived instance of ‘Functor Tree’:
+      You need DeriveFunctor to derive an instance for this class
+    In the data declaration for ‘Tree’
+
+Third Try:
+
+    Prelude> :{
+    Prelude| {-# LANGUAGE DeriveFunctor #-}
+    Prelude| data Tree a = Leaf a | Node (Tree a) (Tree a)
+    Prelude|     deriving (Functor, Show)
+    Prelude| :}
+    <interactive>:35:1: parse error on input ‘data’
+
+
+
+
+:{
+data Tree a = Leaf a | Node (Tree a) (Tree a)
+    deriving (Functor, Show)
+:}
+
+fmap (+1) (Node (Leaf 3) (Leaf 4))
+
+{-# LANGUAGE DeriveFunctor #-}
+data Tree a = Leaf a | Node (Tree a) (Tree a) deriving (Functor, Show)
+
+
+{-# LANGUAGE DeriveFunctor #-}
+data Ree a = Leaf a | a Node (Ree a) (Ree a) deriving (Functor, Show)
+
+
+data Graph a =
+
 
 :{
 data Graph a = Graph [a] [(a, a)]
-                   deriving (Show, Eq)
+               deriving (Show, Eq,Functor)
 :}
 
-data Mesh a = Mesh [a] [(a, a)] [(a, a, a)]
+let g = Graph [1,2,3] [(1,2),(1,3)]
 
-let a = Graph ['b','c','d','f','g','h','k'] [('b','c'),('b','f'),('c','f'),('f','k'),('g','h')]
+:t g
 
-let aa = Mesh ['b','c','d','f','g','h','k'] [('b','c'),('b','f'),('c','f'),('f','k'),('g','h')] [('b','f','c')]
+-- is there any way to do this without explicitly referncing the graph in the input
 
-let b = Graph [(0,1),(2,0)] [((0,1),(2,0))]
+let nodes (Graph nodes verts) = nodes
 
-graphToAdj a
-
-b
-
-graphToAdj Graph ['b','c','d','f','g','h','k'] [('b','c'),('b','f'),('c','f'),('f','k'),('g','h')]
-
-Adj [('b', "cf"), ('c', "bf"), ('d', ""), ('f', "bck"), ('g', "h"), ('h', "g"), ('k', "f")]
+let nodes (Graph ns edges) = ns
+let edges (Graph ns es) = es
 
 
-Adj [('b', "cf"), ('c', "bf"), ('d', ""), ('f', "bck"), ('g', "h"), ('h', "g"), ('k', "f")]
+nodes g
+edges g
 
+-- seems to work
+let pathsFromN n g = fn n $ edges g
+
+pathsFromN 3 g
+
+pathsFromN 4 g
+
+let g = Graph [1,2,3,4] [(1,2),(1,3),(2,3),(3,4)]
+
+:t g
+
+-- retern a list of lists with each list representing a unique path from n
+--
+
+:t [[3]]
+
+highOrderPathsFromN :: Int -> Graph Int -> [[Int]]
+
+[3] : [3] : []
+
+(3,4) : (3,3) : []
+(3,4,3) : [(3,4,3)]
+
+let mapConsList x a@(y:ys) = map (\z -> x : z : []) a
+
+mapConsList [3] [[3],[4]]
+
+mapConsList 3 [3,4]
+mapConsList (3,2) [(3,1),(4,4)]
+
+mapConsList [(3,2)] [[(3,1)],[(4,4)]]
+
+pathsFromN 1 g
+
+let g = Graph [1,2,3,4,5] [(1,2),(1,3),(2,3),(2,4),(2,5),(3,4),(4,1),(4,5)]
+let e = edges g
+
+e
+
+-- define it for just an edge set, not a graph
+
+let pathsFromNe n edges = fn n $ edges
+
+pathsFromNe 1 e
+
+scndO :: Int a => [(a,a)]
+scndO
+
+-- the e here has to come from the nodes out of 1
+
+let mapSnd e = map snd e
+
+mapSnd $ pathsFromNe 1 e
+
+let nodes1 = mapSnd e
+
+nodes1
+
+let mapPaths ns e = map (\x -> pathsFromNe x e) ns
+
+e
+
+mapPaths (mapSnd $ pathsFromNe 1 e) e
+pathsFromNe 1 e
+
+-- [(1,2),(1,3)]
+
+-- not quite, but almost, need to modify mapcons
+--perhaps a zipwith mapcons? YES
+--this should be our second order solution.  I'll clean it up tomorrow
+
+
+zipWith mapConsList (pathsFromNe 1 e) (mapPaths (mapSnd $ pathsFromNe 1 e) e)
+
+mapConsList 3 [3,4]
+mapConsList (3,2) [(3,1),(4,4)]
+
+let aaa = zipWith mapConsList (pathsFromNe 1 e) (mapPaths (mapSnd $ pathsFromNe 1 e) e)
+
+:t aaa
+
+e
+
+-- all definitions are referenced below
+
+:{
+let aaa edg n = zipWith mapConsList pf mp
+      where mp = mapPaths ms edg
+            ms = mapSnd $ pf
+            pf = pathsFromNe n edg
+:}
+
+aaa e 5
+
+-- it clearly doesn't work if there isn't a second order term, e.g. (1,5).  So it is a much more rigid, linear algebra like structure (e.g. all the lists must have two elements), they can't have 1
+
+let g = Graph [1,2,3,4,5] [(1,2),(1,3),(1,4),(2,3),(2,4),(3,4),(4,1),(1,5),(5,2)]
+let e = edges g
+
+mapPaths [1,2] e
+
+let mapSnd e = map snd e
+let mapPaths ns e = map (\x -> pathsFromNe x e) ns
+let pathsFromNe n edges = fn n $ edges
+:{
+let fn n [] = []
+    fn n (x:xs)
+      | n == fst x = x : fn n xs
+      | otherwise = fn n xs
+:}
+
+-- just testing the order of where expressions
+:{
+let gjk b = 3*x + y
+      where x = y + 2
+            y = z * 3
+            z = b
+:}
+gjk 3
+
+
+mapPaths e nodes1
+
+
+secondOrderPathsFromN n g =
+
+highOrderPathsFromN n g =
+
+let pathsToN n g = tn n $ edges g
+
+pathsToN 3 g
+
+paths n1 n2 g =
+
+fst (1,2)
+snd (1,2)
+
+-- tn === toN
+
+:{
+let tn n [] = []
+    tn n (x:xs)
+      | n == snd x = x : tn n xs
+      | otherwise = tn n xs
+:}
+
+tn 3 [(1,3),(3,1),(3,2)]
+
+-- try to extract paths with same first node
+
+:{
+let fn n [] = []
+    fn n (x:xs)
+      | n == fst x = x : fn n xs
+      | otherwise = fn n xs
+:}
+
+fn 3 [(1,3),(3,1),(3,2)]
+
+-- alternatively, we can more easily use a filter
+
+
+let filterFstIsN n y@(x:xs) = filter (\a -> n == fst a) y
+
+filterFstIsN 3 [(1,3),(3,1),(3,2)]
+
+fst (1,2)
+snd (1,2)
+
+
+
+
+fmap (+1) g
 
 :{
 data Adjacency a = Adj [(a, [a])]
-                     deriving (Show, Eq)
+                   deriving (Show, Eq,Functor)
 :}
 
-:{
-data Friendly a = Edge [(a, a)]
-                      deriving (Show, Eq)
-:}
+let adj1 = Adj [(3,[1,2]),(1,[3]),(2,[3])]
 
-:{
-let graphToAdj :: (Eq a) => Graph a -> Adjacency a
-    graphToAdj (Graph [] _)      = Adj []
-    graphToAdj (Graph (x:xs) ys) = Adj ((x, ys >>= f) : zs)
-       where
-          f (a, b)
-             | a == x = [b]
-             | b == x = [a]
-             | otherwise = []
-          Adj zs = graphToAdj (Graph xs ys)
-:}
+fmap (*11) adj1
 
-:{
-let adjToGraph :: (Eq a) => Adjacency a -> Graph a
-    adjToGraph (Adj [])          = Graph [] []
-    adjToGraph (Adj ((v, a):vs)) = Graph (v : xs) ((a >>= f) ++ ys)
-       where
-          f x = if (v, x) `elem` ys || (x, v) `elem` ys
-                then []
-                else [(v, x)]
-          Graph xs ys = adjToGraph (Adj vs)
-:}
+:t adj1
 
+let adj2 = [(3,[1,2]),(1,[3]),(2,[3])]
 
-
-graphToFri :: (Eq a) => Graph a -> Friendly a
-graphToFri (Graph [] _)  = Edge []
-graphToFri (Graph xs ys) = Edge (ys ++ zip g g)
-   where
-      g = filter (\x -> all (\(a, b) -> x /= a && x /= b) ys) xs
-
-
-friToGraph :: (Eq a) => Friendly a -> Graph a
-friToGraph (Edge []) = Graph [] []
-friToGraph (Edge vs) = Graph xs ys
-   where
-      xs = foldr acc [] $ concat $ map (\(a, b) -> [a, b]) vs
-      ys = filter (uncurry (/=)) vs
-      acc x xs = if x `elem` xs then xs else x : xs
-
-adjToFri :: (Eq a) => Adjacency a -> Friendly a
-adjToFri = graphToFri . adjToGraph
-
-friToAdj :: (Eq a) => Friendly a -> Adjacency a
-friToAdj = graphToAdj . friToGraph
-
+fmap (+1) adj2
 
