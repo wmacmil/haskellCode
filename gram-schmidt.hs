@@ -18,7 +18,6 @@ let proj e a = map (*b) e
 :}
 
 let ip = (foldr (+) 0 .) . (zipWith (*))
-
 :{
 let proj e a = map (*b) e
       where b = (ip e a)/(ip e e)
@@ -44,18 +43,95 @@ let u2 xs = zipWith (-) a2 pa2
 --FINALLY!!!!
 
 :{
-let u2 xs 1 = [head xs]
-    u2 xs n = asdf : us
-      where asdf = zipWith (-) a2 spa2
-            a2 = kth xs n
-            spa2 = foldr (zipWith (+)) [0,0,0] pa2
-            pa2 = map (\x -> proj x a2) us
-            us = u2 xs (n-1)
+let uks aks 1 = [head aks]
+    uks aks n = uk : us
+      where uk = subtractLists ak sumProjUs
+            ak = kth aks n
+            sumProjUs = addListOfLists zs projectedUs
+            zs = kzeros $ length ak
+            projectedUs = map (\x -> proj x ak) us
+            us = uks aks (n-1)
 :}
 
-ex
+uks ex 3
 
-u2 ex 3
+:{
+let normalize vec = map (*a) vec
+      where a = (1 / norm vec)
+:}
+let norm vec = (ip vec vec) ** 0.5
+
+normalize [-1,2,4,2]
+norm [2,2]
+
+-- Q
+map normalize $ reverse $ uks ex 3
+
+let u = reverse $ uks ex 3
+
+
+let q = map normalize $ reverse $ uks ex 3
+
+
+-- Cool, I got it
+matMatMult (transpose q) ex
+
+q
+
+69/175
+6 /35
+
+
+matMatMult (transpose a) q
+
+-- R
+-- == (Q transpose) A
+-- we're assuming the internal lists represent columns, not rows
+-- need to typecheck so that row and column sizes match up
+
+let matrixVecMult m v = map (ip v) (transpose m)
+
+matrixVecMult [[2,1],[0,1],[3,2]] [1,1,1]
+
+let matMatMult m1 m2 = map (matrixVecMult (transpose m1)) m2
+
+-- I think this is right, based off the example below
+let matMatMult m1 m2 = map (matrixVecMult m1) m2
+
+matMatMult [[1,2],[3,4],[10,20]] [[0,1,1]]
+
+
+
+
+
+
+
+
+
+:t kzeros
+
+:{
+let kth (x:xs) 1 = x
+    kth (x:xs) k = kth xs (k-1)
+:}
+
+let ip = (foldr (+) 0 .) . (zipWith (*))
+
+:{
+let proj e a = map (*b) e
+      where b = (ip e a)/(ip e e)
+:}
+
+-- there was something wrong with the prior type signature of kzeros in my somewhat degenerate definition
+
+:{
+let kzeros 0 = []
+    kzeros k = 0 : kzeros (k-1)
+:}
+let subtractLists = zipWith (-)
+let addListOfLists = foldr (zipWith (+))
+
+
 
 -- correct
 :{
@@ -123,6 +199,7 @@ let uk :: (Eq a, Num a) => [[a]] -> Int -> Int -> [a]
 kth [1,2] 2
 
 
+
 :t firstK
 
 firstK [1..10] 3
@@ -151,7 +228,6 @@ uk [a] = a
 uk as = zipWith (-) ak (foldr (zipWith (+)) (map (\x -> proj x ak) us))
   where ak = kth as k
         us = uk (firstK as)
-
 
 
 foldr (zipWith (+)) (map (\x -> proj x ak) (u:us))
@@ -224,14 +300,13 @@ zipWith (-) [2,3] (zipWith (-) [1,1] (zipWith (-) [2,1] [0,0]))
 let normalize vec = map (*a) vec
       where a = (1 / norm vec)
 :}
-
--- interesting that this comes out nice
-normalize [-1,2,4,2]
-
-
 let norm vec = (ip vec vec) ** 0.5
 
+normalize [-1,2,4,2]
 norm [2,2]
+
+-- interesting that this comes out nice
+
 
 
 :t n
