@@ -72,14 +72,11 @@ let u = reverse $ uks ex 3
 
 let q = map normalize $ reverse $ uks ex 3
 
+matMatMult (transpose q) q
 
--- Cool, I got it
+
+-- Cool, I got it. HERE
 matMatMult (transpose q) ex
-
-q
-
-69/175
-6 /35
 
 
 matMatMult (transpose a) q
@@ -93,20 +90,14 @@ let matrixVecMult m v = map (ip v) (transpose m)
 
 matrixVecMult [[2,1],[0,1],[3,2]] [1,1,1]
 
+
 let matMatMult m1 m2 = map (matrixVecMult (transpose m1)) m2
 
 -- I think this is right, based off the example below
+
 let matMatMult m1 m2 = map (matrixVecMult m1) m2
 
 matMatMult [[1,2],[3,4],[10,20]] [[0,1,1]]
-
-
-
-
-
-
-
-
 
 :t kzeros
 
@@ -128,8 +119,152 @@ let proj e a = map (*b) e
 let kzeros 0 = []
     kzeros k = 0 : kzeros (k-1)
 :}
+
 let subtractLists = zipWith (-)
 let addListOfLists = foldr (zipWith (+))
+
+-----------------------------------------
+
+let scalarMult c x = map (*c) x
+
+let e1 = [1,0,0]
+let a1 = head ex
+
+
+let u = subtractLists a1 (scalarMult (norm a1) e1)
+
+u
+
+
+let v = normalize u
+
+-- in wikipedia it factors out the gcd of the list to be merged into q
+
+import Data.List
+
+
+:{
+let q1 a = matAdd m1 m2
+      where m2 = matScalMult (-2) vTranspsV
+            vTranspsV = matMatMult [v] (transpose [v])
+            v = normalize u
+            u = subtractLists a1 (scalarMult (norm a1) e1)
+            e1 = head m1
+            m1 = id size
+            a1 = head a
+            size = length a
+:}
+
+q1 ex
+
+-- generalize this
+
+oneOneMinor $ matMatMult (transpose (q1 ex)) ex
+
+-- this we need to generalize to recurse over
+
+let fdsa = oneOneMajor $ q1 $ oneOneMinor $ matMatMult (transpose (q1 ex)) ex
+
+-- here this seems to works
+
+matMatMult ((matMatMult (fdsa) (q1 ex))) ex
+
+map (map round) $ matMatMult ((matMatMult (fdsa) (q1 ex))) ex
+
+-- this gives the transposed result
+-- Q2 * Q1 == Q_transpose
+(matMatMult (fdsa) (q1 ex))
+
+-- this gives the right result
+(matMatMult (transpose $ q1 ex) (transpose fdsa))
+
+let oneOneMajor xs = [1,0,0] : (map (0:) xs)
+
+
+-- true up to wikipedia
+map (map round) (matMatMult (transpose (q1 ex)) ex)
+
+
+
+round 3.02
+
+oneOneMinor $ matMatMult (transpose asdf) ex
+
+oneOneMinor ex
+
+q1 $ oneOneMinor ex
+
+7 /25
+24 /25
+
+
+
+
+
+-- cool, verifying this above defn is sound
+matAdd (q1 ex) (matScalMult (-1) asdf)
+
+length a1
+
+-- correct final step of alg., before refactoring
+:{
+let asdf = matAdd m1 m2
+      where m1 = id 3
+            m2 = matScalMult (-2) vTranspsV
+            vTranspsV = matMatMult [v] (transpose [v])
+:}
+
+-- Correct up to Wikipedia
+
+matMatMult (transpose asdf) ex
+oneOneMinor $ matMatMult (transpose asdf) ex
+
+
+let oneOneMinor xs = transpose (drop 1 $ transpose (drop 1 xs))
+
+oneOneMinor (id 3)
+
+
+drop 3 [1..4]
+
+
+let matScalMult c = map (map (*c))
+
+matScalMult 3 $ id 4
+
+let matAdd = zipWith (zipWith (+))
+
+matAdd (id 3) (id 3)
+
+-- Cool, I got it. HERE
+matMatMult (transpose q) ex
+
+-- algorith according to wikipedia
+-- u = x - alpha e1
+-- v = u / norm u, (== normalize u)
+--Q = I - 2 v (transpose v)
+--then, finally, Q1 * A
+
+:{
+let i n 0 = []
+    i 1 m = 1 : i 0 (m-1)
+    i n m = 0 : i (n-1) (m-1)
+:}
+let id n = map (\x -> i x n) [1..n]
+
+id 3
+
+:{
+let id n = map (\x -> i x n) [1..n]
+      where i n 0 = []
+            i 1 m = 1 : i 0 (m-1)
+            i n m = 0 : i (n-1) (m-1)
+:}
+
+norm $ head ex
+
+
+matMatMult [[1..3]] (transpose [[1..3]])
 
 
 
@@ -300,6 +435,7 @@ zipWith (-) [2,3] (zipWith (-) [1,1] (zipWith (-) [2,1] [0,0]))
 let normalize vec = map (*a) vec
       where a = (1 / norm vec)
 :}
+
 let norm vec = (ip vec vec) ** 0.5
 
 normalize [-1,2,4,2]

@@ -1380,3 +1380,4 @@ koanId = koan "id function" $ do
 
 
 
+-- https://math.stackexchange.com/questions/1300484/distance-between-line-and-a-point
