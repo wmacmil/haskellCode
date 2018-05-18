@@ -1,20 +1,12 @@
+:{
+let insertAt :: a -> Int -> [a] -> [a]
+    insertAt newElement _ [] = [newElement]
+    insertAt newElement i (a:as)
+      | i <= 1 = newElement:a:as
+      | otherwise = a : insertAt newElement (i - 1) as
+:}
 
-
-let x = 'a' : "asdf"
-
-x
-
-let surround xs y = y : xs : y : []
-
-surround "asdf" 'a'
-
-appendtToEnd xs y =
-
-insertAt :: a -> Int -> [a] -> [a]
-insertAt newElement _ [] = [newElement]
-insertAt newElement i (a:as)
-  | i <= 0 = newElement:a:as
-  | otherwise = a : insertAt newElement (i - 1) as
+insertAt 3 4 [1..10]
 
 :{
 let insertAtEnd a [] = [a]
@@ -23,9 +15,13 @@ let insertAtEnd a [] = [a]
 
 insertAtEnd 'c' "asdf"
 
-let surround x y = x : insertAtEnd x y
+let surround x ys = x : insertAtEnd x ys
 
 surround 'c' "asdf"
+
+
+easierSurround x ys = x : ys ++ [x]
+easierSurround 3 [1..4]
 
 :{
 let myConcat [] [] = []
@@ -36,16 +32,19 @@ let myConcat [] [] = []
 myConcat "asdf" "fdsa"
 
 
+-- a surround with my own concatonation defined
 let beforeAndAfter x y = myConcat x $ myConcat y x
-
 beforeAndAfter "asdf" "fdsa"
 
+-- e.g. belongsTo
 :{
 let questionMark x [] = False
     questionMark x (y:ys)
       | x == y = True
       | otherwise = questionMark x ys
 :}
+questionMark 3 [1..5] == True
+questionMark 3 [4..5] == False
 
 
 :{
@@ -57,13 +56,13 @@ let q2 xs [] = False
       | otherwise = q2 (x:xs) ys
 :}
 
--- matches if there is an a somewhere followed by a b anywhere else after it
+-- matches if there is an a somewhere followed by a b anywhere else after it.  There's some regexp for this
+
 q2 "ab" "aabc"
 q2 "ab" "aacbc"
 q2 "ab" "cbca"
 
 questionMark 'a' "bc"
-
 questionMark 'a' "bcaa"
 
 :{
@@ -77,30 +76,20 @@ let q2 xs [] = False
 
 
 
-
-:{
-let q2 xs [] = False
-    q2 z@(x:xs) (y:ys)
-      | z == [] = True
-      | x == y = q2 xs ys
-      | otherwise = q2 z ys
-:}
-
-
-
-:{
-let tree1' = Branch 'a' (Branch 'b' (leaf 'd')
-                                        (leaf 'e'))
-                            (Branch 'c' Empty
-                                        (Branch 'f' (leaf 'g')
-                                                    Empty)))
-:}
-
-let t2 = Branch 'a' Empty Empty
+-- doesn't work, don't care to figure out why
+-- :{
+-- let q2 xs [] = False
+--     q2 z@(x:xs) (y:ys)
+--       | z == [] = True
+--       | x == y = q2 xs ys
+--       | otherwise = q2 z ys
+-- :}
 
 
-tree4 = Branch 1 (Branch 2 Empty (Branch 4 Empty Empty))
-                 (Branch 2 Empty Empty)
+
+
+
+
 
 
 :{
@@ -125,7 +114,6 @@ let qR :: Int -> Int -> (Int, Int)
 :}
 
 map (qR 100) [1..20]
-
 :{
 let quot' x y
   | (x >= y)   = quot' (x-y) y
@@ -138,13 +126,21 @@ let myMod x y
       | (x < y) = x
       | otherwise = myMod (x - y) y
 :}
+-- x bigger, y smaller
 
+myMod 55 11
+myMod 55 13
+
+map (myMod 55) [1..11]
+
+-- quotient? Indepenent of
 :{
 let quot x y n
       | x < y = n
       | otherwise = quot (x-y) y (n+1)
 :}
 
+quot 18 6 0
 
 quot x y = n
   where n
