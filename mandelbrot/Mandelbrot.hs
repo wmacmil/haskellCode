@@ -1,14 +1,8 @@
--- Mandelbrot in Haskell
-
 module Main where
    type Complex = (Double, Double)
 
    cmake :: Double -> Double -> Complex
    cmake r  i = (r, i)
-
-let c1 = cmake 3 4
-
-creal c1
 
    creal :: Complex -> Double
    creal (r, i) = r

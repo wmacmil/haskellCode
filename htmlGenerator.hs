@@ -11,10 +11,12 @@ surroundbyYandZ "asdj" "div" "vid"
 
 tags xs = '<' : xs ++ ['>']
 
-tags2 xs b a  = b ++ xs ++ a
 
 
 tags "div"
+
+tags2 xs b a  = b ++ xs ++ a
+
 endTags xs = "</" ++ xs ++ ['>']
 endTags "div"
 
@@ -46,20 +48,73 @@ putStrLn $ addTab (elementize "li" $ (elementize "div" "  randomtext")) '\n'
 
 -- its like some kind of twisted dependency.  can't tab the second line without tabbing the last line
 -- try this
+
 realTab x = addTab (tab x) '\n'
 
 putStrLn $ elementize "li" $ realTab $ elementize "div" $ realTab "asdf"
 
+a
+
 let a = nestedElements ["img","div","div"] "text"
 
-let b = map (nestedElements "div") ["text","free"]
+let b = map (nestedElements ["div"]) ["text","free"]
 
+-- cool, this is how you parallelize it
+mapM (nestedElements ["div"]) ["text","free"]
 
+:t mapM (nestedElements ["div"]) ["text","free"]
+
+nestedElements ["div"] "text"
+
+nestedElements ["div"] "text"
+
+nestedElements ["html"] (nestedElements ["div"] "text")
+
+:t mapM
+
+:t nestedElements ["div"]
+:t nestedElements
+
+mapIO (nestedElements ["div"]) ["text","free"]
+
+mapIO nestedElements ["div"] ["text","free"]
+
+-- not right, needs some correction
+-- need to get rid of the extra space at the end
+
+putStrLn $ foldl (\x y -> x ++ "\n" ++ y) "" $ map (nestedElements2 ["div"]) ["text","free","point"]
+
+map (nestedElements2 ["div"]) ["text","free"]
+
+:t nestedElements
+
+:{
+mapIO :: (a -> IO b) -> [a] -> [b] -> IO [b]
+mapIO f [] acc = do return acc
+mapIO f (x:xs) acc = do
+  new <- f x
+  mapIO f xs (new:acc)
+:}
+
+-- correct
+
+-- now its composable
+nestedElements2 ["bjsdjf"] $  nestedElements2 ["akd"] "text"
+
+:{
+let nestedElements2 [] y = y
+    nestedElements2 (x:xs) y = nestedElements2 xs er
+      where er = elementize x $ realTab y
+:}
+
+-- correct
 :{
 let nestedElements [] y = putStrLn y
     nestedElements (x:xs) y = nestedElements xs er
       where er = elementize x $ realTab y
 :}
+
+:t realTab
 
 :{
 elementize tagname content = surround tabbedct tag endtag
@@ -68,9 +123,19 @@ elementize tagname content = surround tabbedct tag endtag
         tabbedct = content ++ "\n"
 :}
 
-"\n" == "ab"
+-- i think this is the one used in the above defn
+-- the second char should be \n to get realtab above
+:{
+let addTab [] _ = []
+    addTab (x:xs) z
+      | x == z = z : "  " ++ addTab xs z
+      | otherwise = x : addTab xs z
+:}
 
-"\n"
+:t addTab
+
+tab x = "  " ++ x
+
 
 addTab "anb\najsdfj"
 
@@ -100,16 +165,9 @@ flatten
 double x = x:x
 
 
-tab x = "  " ++ x
 
 addTab
 
-:{
-let addTab [] _ = []
-    addTab (x:xs) z
-      | x == z = z : "  " ++ addTab xs z
-      | otherwise = x : addTab xs z
-:}
 
 :{
 let addTab [x] _ = [x]
